@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <style>
+        #playPauseButtonContainer {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 999;
+        }
+
+        #openWebsiteButtonContainer {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 999;
+        }
+
+        #playPauseButton,
+        #openWebsiteButton {
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            outline: none;
+            border: none;
+        }
+
+        #playPauseButton {
+            background-color: #FFD700;
+            color: #000;
+        }
+
+        #openWebsiteButton {
+            background-color: #1E90FF;
+            color: #fff;
+        }
+
+        .a-enter-vr-button {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Play Button -->
+    <div id="playPauseButtonContainer">
+        <button id="playPauseButton" disabled>Play</button>
+    </div>
+
+    <!-- Open Website Button -->
+    <div id="openWebsiteButtonContainer">
+        <button id="openWebsiteButton">Open Website</button>
+    </div>
+
+    <!-- AR Scene -->
+    <a-scene
+        mindar-image="imageTargetSrc: ./targets.mind"
+        color-space="sRGB"
+        renderer="colorManagement: true, physicallyCorrectLights"
+        vr-mode-ui="enabled: false"
+        device-orientation-permission-ui="enabled: false">
+
+        <a-assets>
+            <video id="demoVideo" src="DIAMOND ring.mp4" playsinline></video>
+        </a-assets>
+
+        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+        <!-- Single Target -->
+        <a-entity id="target1" mindar-image-target="targetIndex: 0">
+            <!-- Video Display -->
+            <a-plane id="videoDisplay" position="0 0 0" height="0.59" width="1" material="src: #demoVideo"></a-plane>
+        </a-entity>
+    </a-scene>
+
+    <script>
+        const videoDisplay = document.querySelector('#videoDisplay');
+        const playPauseButton = document.querySelector('#playPauseButton');
+        const videoElement = document.querySelector('#demoVideo');
+        const openWebsiteButton = document.querySelector('#openWebsiteButton');
+
+        let isPlaying = false; // State to track play/pause
+        let targetVisible = false; // State to track target visibility
+
+        // Event listener for the Play button
+        playPauseButton.addEventListener('click', () => {
+            if (!targetVisible) return; // Prevent playing if target is not visible
+            if (isPlaying) {
+                videoElement.pause();
+                playPauseButton.textContent = 'Play';
+            } else {
+                videoElement.play();
+                playPauseButton.textContent = 'Pause';
+            }
+            isPlaying = !isPlaying;
+        });
+
+        // Target found event
+        const target = document.querySelector('#target1');
+        target.addEventListener('targetFound', () => {
+            targetVisible = true;
+            playPauseButton.disabled = false; // Enable the Play button
+        });
+
+        // Target lost event
+        target.addEventListener('targetLost', () => {
+            targetVisible = false;
+            playPauseButton.disabled = true; // Disable the Play button
+            videoElement.pause(); // Pause the video when target is lost
+            playPauseButton.textContent = 'Play'; // Reset button text
+            isPlaying = false; // Reset state
+        });
+
+        // Event listener for the Open Website button
+        openWebsiteButton.addEventListener('click', () => {
+            window.open('https://shilpee2.odoo.com/', '_blank'); // Opens the URL in a new tab
+        });
+    </script>
+</body>
+</html>
